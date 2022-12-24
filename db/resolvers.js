@@ -63,7 +63,35 @@ const resolvers = {
           throw new Error('No tienes las credenciales.')
         }
         return cliente;
-      }
+      },
+     // =========== Obtener Pedidos =================
+     obtenerPedidos: async (  ) => {
+        try {
+          const pedidos = await Pedido.find({});
+          return pedidos;
+        } catch (err) {
+            console.log("error en mostrar todos los pedidos.",err)
+        }
+     },
+     // ==================Obtener Pedidos por Vendedor
+     obtenerPedidosVendedor : async (_, {}, ctx) => {
+        try { 
+          const pedidos = await Pedido.find({vendedor:ctx.usuario.id});
+          return pedidos;
+        } catch (err){
+          console.log('Error en obtener pedido por ti.')
+        }
+     },
+     // ===========OBTENER SOLO PEDIDO
+     obtenerPedido : async (_,{id},ctx) => {
+        // Si el pedido existe
+       const pedido = await Pedido.findById(id);
+       if (!pedido) throw new Error('Pedido no encontrado');
+       // Solo quien lo creo puede verlo
+       if(pedido.vendedor.toString() !== ctx.usuario.id) throw new Error('Error en las credendiales.')
+       // retornar el resultado
+       return pedido;
+     }
    },
 
 
