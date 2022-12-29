@@ -91,6 +91,64 @@ const resolvers = {
        if(pedido.vendedor.toString() !== ctx.usuario.id) throw new Error('Error en las credendiales.')
        // retornar el resultado
        return pedido;
+     },
+     //========= OBTENER ESTADO DEL PEDIDO
+     obtenerPedidoEstado : async ( _, {estado},ctx) => {
+        // Si el pedido existe
+        const pedidos = await Pedido.find({vendedor:ctx.usuario.id, estado});
+        return pedidos;
+     },
+     // ==================== OBTENER MEJORES CLIENTES
+     mejoresClientes : async () => {
+        const clientes = await Pedido.aggregate([
+          { $match : { estado : "COMPLETADO"}},
+          { $group : {
+            _id : "$cliente",
+            total : { $sum : '$total'}
+          }},
+          {
+            $lookup : {
+              from : 'clientes',
+              localField : '_id',
+              foreignField : '_id',
+              as : "cliente"
+            }
+          },
+          {
+            $sort : { total : -1}
+          }
+        ]);
+        return clientes;
+     },
+     // ===================- OBTENER MEJORES VENDEDORES
+     mejoresVendedores : async () => {
+      const vendedores = await Pedido.aggregate([
+        { $match : { estado : "COMPLETADO" }},
+        { $group : {
+          _id : "$vendedor",
+          total : { $sum : '$total' }
+        }},
+        {
+          $lookup : {
+            from : 'usuario',
+            localField : '_id',
+            foreignField : '_id',
+            as : 'vendedor'
+          }
+        } , 
+        {
+          $limit : 3
+        },
+        {
+          $sort : { total : -1}
+        }
+      ]);
+      return vendedores;
+     },
+     // ======================BUSCAR PRODUCTOS
+     buscarProducto : async (_,{texto}) => {
+      const producto = await Producto.find({$text:{$search:texto}}).limit(10);
+      return producto;
      }
    },
 
@@ -258,8 +316,49 @@ const resolvers = {
       // Guardar en la base de datos
       const resultado = await nuevoPedido.save();
       return resultado;
-    }
-   }
-}
+    },
+    // ================= ACTUALIZAR PEDIDO
+    actualizarPedido: async (_, {id, input}, ctx) => {
+      const {cliente} = input;
+      // Si el pedido existe
+      const existePedido = await Pedido.findById(id);
+      if (!existePedido) throw new Error('No se encuentra el pedido');
+      // SI el cliente existe
+      const existeCliente = await Cliente.findById(cliente);
+      if (!existeCliente) throw new Error('No se encuentra el cliente');
+      // Si el cliente y pedido pertenece al vendedor
+      if (existeCliente.vendedor.toString() !== ctx.usuario.id) throw new Error('No tienes todas las credenciales');
+      // Revisar el stock
+      if(input.pedido){
+        for await (const articulo of input.pedido)
+        {
+          const { id } = articulo;
+          const producto = await Producto.findById(id);
+          if(articulo.cantidad > producto.existencia){
+            throw new Error(`El articulo ${producto.nombre} excede la cantidad disponible.`)
+          } else {
+            // Restar la cantidad disponible
+            producto.existencia = producto.existencia -  articulo.cantidad;
+            await producto.save();
+          }
+        }  
+      }
+      // Guardar pedido
+      const resultado = await Pedido.findOneAndUpdate({_id:id},input,{new:true});
+      return resultado;
 
+    },
+      // Guardar el pedido
+      eliminarPedido: async (_,{id},ctx) => { 
+        // verificar si el pedido existe
+        const pedido = await Pedido.findById(id);
+        if(!pedido) throw new Error('No se encuentra el pedido.');
+        //verificar si el vendedor es quien lo borra
+        if(pedido.vendedor.toString() !==  ctx.usuario.id) throw new Error('No tienes todas las credenciales.');
+        // Eliminar Producto
+        await Pedido.findOneAndDelete({_id:id});
+        return 'Pedido Eliminado.'
+      },
+   },
+}
 module.exports = resolvers;
