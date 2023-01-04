@@ -49,7 +49,13 @@ const resolvers = {
             console.log('Error en mostar todos los clientes',err);
          }
       },
-
+      obtenerClientesVendedor: async (_,{},ctx) => {
+        try {
+           const clientes = await Cliente.find({vendedor:ctx.usuario.id.toString()});
+        } catch (err) {
+           console.log(err)
+        }
+     },
       // ============ ObtenerCliente ==============
       obtenerCliente: async (_,{id},ctx) => {
         //Revisar si el cliente existe
@@ -184,26 +190,26 @@ const resolvers = {
 
     //============= AutenticarUsuario =========
     autenticarUsuario: async (_, {input}) => {
-      try {
-        const {email, password} = input;
-        // Si el usuario esta registrado
-        const existeUsuario = await Usuario.findOne({email});
-        if (!existeUsuario) {
-          throw new Error('El usuario no esta registrado.')
-        }
-        // Si el password es correcto
-        // Comparamos en "password" que enviamos con la que hay en la base de datos "existeUsuario.password"
-        const passwordCorrecto = await bcryptjs.compare(password, existeUsuario.password);
+      const { email,password } = input;
+      // Si el usuario esta registrado
+      const existeUsuario = await Usuario.findOne({email});
+      if (!existeUsuario) {
+        throw new Error('El usuario no esta registrado.')
+      }
+      // Si el password es correcto
+      // Comparamos en "password" que enviamos con la que hay en la base de datos "existeUsuario.password"
+      const passwordCorrecto = await bcryptjs.compare(password, existeUsuario.password);
         if (!passwordCorrecto) {
-          throw new Error("El password o email son incorrectos.")
+            throw new Error("El password o email son incorrectos.")
         }
-        //Crear TOKEN
+      try {
+         //Crear TOKEN
         return {
-          token: crearToken(existeUsuario, process.env.SECRETA, '24h')
+            token: crearToken(existeUsuario,process.env.SECRETA,'24h')
         }
       } catch (error) {
-        console.log('error', error)
-      }
+        console.log('error',error)
+      } 
     },
 
     //============= NuevoProducto =========
@@ -231,7 +237,6 @@ const resolvers = {
 
     //============= EliminarProducto =========
     eliminarProducto: async (_, {id}) => {
-         
       const producto = await Producto.findById(id);
       if (!producto) throw new Error('Producto para elimimnar, no encontrado');
       await Producto.findByIdAndDelete({_id: id});

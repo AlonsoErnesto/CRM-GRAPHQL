@@ -101,6 +101,7 @@ const typeDefs = gql`
       obtenerProducto(id:ID!):Producto
       # Cliente
       obtenerClientes:[Cliente]
+      obtenerClientesVendedor:[Cliente]
       obtenerCliente(id:ID!):Cliente
       # Pedidos
       obtenerPedidos:[Pedido]
