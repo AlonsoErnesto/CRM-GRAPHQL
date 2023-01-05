@@ -16,9 +16,11 @@ const crearToken = (usuario,secreta,expiresIn) => {
 const resolvers = {
    Query : {
       // ============ ObtenerUsuario ==============
-      obtenerUsuario : async (_,{token}) => {
-         const usuarioId = await jwt.verify(token,process.env.SECRETA);
-         return usuarioId;
+      obtenerUsuario : async (_,{},ctx) => {
+        //  const usuarioId = await jwt.verify(token,process.env.SECRETA);
+        //  return usuarioId;
+        console.log(ctx.usuario)
+        return ctx.usuario;
       },
 
       // ============ ObtenerProductoS ==============
@@ -52,6 +54,7 @@ const resolvers = {
       obtenerClientesVendedor: async (_,{},ctx) => {
         try {
            const clientes = await Cliente.find({vendedor:ctx.usuario.id.toString()});
+           return clientes;
         } catch (err) {
            console.log(err)
         }
