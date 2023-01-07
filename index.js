@@ -19,7 +19,6 @@ const server = new ApolloServer({
       try{
             if(token) {
             const usuario = jwt.verify(token.replace('Bearer ',''),process.env.SECRETA);
-            console.log(usuario)
             return {
                usuario
             }

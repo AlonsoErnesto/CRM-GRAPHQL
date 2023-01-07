@@ -19,7 +19,6 @@ const resolvers = {
       obtenerUsuario : async (_,{},ctx) => {
         //  const usuarioId = await jwt.verify(token,process.env.SECRETA);
         //  return usuarioId;
-        console.log(ctx.usuario)
         return ctx.usuario;
       },
 
@@ -56,7 +55,7 @@ const resolvers = {
            const clientes = await Cliente.find({vendedor:ctx.usuario.id.toString()});
            return clientes;
         } catch (err) {
-           console.log(err)
+           console.log('obtenerclientes vendedor ERROR:',err)
         }
      },
       // ============ ObtenerCliente ==============
@@ -248,6 +247,7 @@ const resolvers = {
 
     //============= NuevoCliente =========
     nuevoCliente: async (_, {input}, ctx) => {
+      console.log('first')
       const {email} = input;
       const cliente = await Cliente.findOne({email})
       if (cliente) {
