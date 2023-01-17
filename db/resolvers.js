@@ -84,7 +84,7 @@ const resolvers = {
      // ==================Obtener Pedidos por Vendedor
      obtenerPedidosVendedor : async (_, {}, ctx) => {
         try { 
-          const pedidos = await Pedido.find({vendedor:ctx.usuario.id});
+          const pedidos = await Pedido.find({vendedor:ctx.usuario.id}).populate('cliente');
           return pedidos;
         } catch (err){
           console.log('Error en obtener pedido por ti.')
@@ -302,19 +302,23 @@ const resolvers = {
         throw new Error('No tienes las credenciales.')
       }
 
+
       // Revisar si el stock esta disponible
-      for await ( const articulo of input.pedido ){
+      for await ( const articulo of input.pedidos ){
         const { id } = articulo;
         const producto = await Producto.findById(id);
         if(articulo.cantidad > producto.existencia){
           throw new Error(`El articulo ${producto.nombre} excede la cantidad disponible`);
-        } else { 
+        } else if (articulo.cantidad < producto.existencia) { 
           // Resta de la cantidad disponible
           producto.existencia = producto.existencia - articulo.cantidad;
           await producto.save();
-          
         }
       }
+
+
+
+
       //Crear un nuevo Pedido
       const nuevoPedido = new Pedido(input);
 

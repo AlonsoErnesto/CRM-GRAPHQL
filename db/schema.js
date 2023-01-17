@@ -29,12 +29,13 @@ const typeDefs = gql`
    }
    type Pedido {
       id:ID
-      pedido:[PedidoGrupo]
+      pedidos:[PedidoGrupo]
       total:Float
-      cliente:ID
+      cliente:Cliente
       vendedor:ID
       fecha:String
-      estado:EstadoPedido
+      estado : EstadoPedido
+      # estado:String
 
     }
     type TopCliente {
@@ -84,7 +85,7 @@ const typeDefs = gql`
       precio : Float!
   }
    input PedidoInput {
-      pedido:[PedidoProductoInput]
+      pedidos:[PedidoProductoInput]
       total:Float!
       cliente:ID!
       estado:EstadoPedido
@@ -92,9 +93,9 @@ const typeDefs = gql`
 
   # ===========================ENUM=========================
   enum EstadoPedido {
-      PENDIENTE
-      COMPLETADO
-      CANCELADO
+      Pendiente
+      Completado
+      Cancelado
   }
    # ========================QUERY========================
    type Query {
