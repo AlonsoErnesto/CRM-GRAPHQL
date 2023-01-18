@@ -86,8 +86,8 @@ const typeDefs = gql`
   }
    input PedidoInput {
       pedidos:[PedidoProductoInput]
-      total:Float!
-      cliente:ID!
+      total:Float
+      cliente:ID
       estado:EstadoPedido
   }
 

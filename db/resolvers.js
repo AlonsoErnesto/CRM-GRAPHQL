@@ -331,6 +331,7 @@ const resolvers = {
     },
     // ================= ACTUALIZAR PEDIDO
     actualizarPedido: async (_, {id, input}, ctx) => {
+      console.log('data',input)
       const {cliente} = input;
       // Si el pedido existe
       const existePedido = await Pedido.findById(id);
@@ -341,8 +342,8 @@ const resolvers = {
       // Si el cliente y pedido pertenece al vendedor
       if (existeCliente.vendedor.toString() !== ctx.usuario.id) throw new Error('No tienes todas las credenciales');
       // Revisar el stock
-      if(input.pedido){
-        for await (const articulo of input.pedido)
+      if(input.pedidos){
+        for await (const articulo of input.pedidos)
         {
           const { id } = articulo;
           const producto = await Producto.findById(id);
