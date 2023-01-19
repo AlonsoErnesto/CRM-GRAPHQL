@@ -109,7 +109,7 @@ const resolvers = {
      // ==================== OBTENER MEJORES CLIENTES
      mejoresClientes : async () => {
         const clientes = await Pedido.aggregate([
-          { $match : { estado : "COMPLETADO"}},
+          { $match : { estado : "Completado"}},
           { $group : {
             _id : "$cliente",
             total : { $sum : '$total'}
@@ -131,14 +131,14 @@ const resolvers = {
      // ===================- OBTENER MEJORES VENDEDORES
      mejoresVendedores : async () => {
       const vendedores = await Pedido.aggregate([
-        { $match : { estado : "COMPLETADO" }},
+        { $match : { estado : "Completado" }},
         { $group : {
           _id : "$vendedor",
           total : { $sum : '$total' }
         }},
         {
           $lookup : {
-            from : 'usuario',
+            from : 'usuarios',
             localField : '_id',
             foreignField : '_id',
             as : 'vendedor'
